@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Auth Sandbox</title>
+        <style>
+            .box {
+                border: 1px solid #000;
+                border-radius: 2px;
+                padding: 1rem;
+                margin: 1rem;
+            }
+            .warning-box {
+                color: #e55;
+                border-color: #e55;
+            }
+            .code-input {
+                font-size: 2rem;
+                font-family: monospace;
+            }
+            .hidden {
+                display: none !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="loading">
+            <h1>Please wait...</h1>
+            <hr>
+        </div>
+        <div class="results hidden">
+            <h1>One more thing...</h1>
+            <h3>To finish signing in, copy the code below, and paste it into the app.</h3>
+            <div class="box warning-box">
+                <h2>Warning!</h2>
+                <p>This code will grant access to the account you just signed into.</p>
+                <ul>
+                    <li>Only paste this into the app if you trust it</li>
+                    <li><strong>NEVER share this code with anyone else - they may be trying to access your account!</strong></li>
+                </ul>
+            </div>
+            <div class="box code-box">
+                <p>
+                    If you trust the app, copy and paste this code into it. You can close this window when you are finished.
+                </p>
+                <input class="code-input" id="codeField" type="text" value="the-test-code"/>
+            </div>
+        </div>
+
+        <div class="error hidden">
+            <div class="box warning-box">
+                <h2>Something went wrong</h2>
+                <p>We couldn't finish signing you in. Contact the app developer for help.</p>
+            </div>
+        </div>
+        <script>
+            "use strict";
+            (function(window) {
+                function main() {
+                    let query = window.location.search;
+                    if (!query) {
+                        invalidCode();
+                        return;
+                    }
+
+                    let params = query.substr(1); // strip the ?
+
+                    if (params.indexOf("code=") == -1 && params.indexOf("id_token=" == -1) && params.indexOf("access_token" == -1)){
+                        invalidCode();
+                        return;
+                    }
+
+                    let codeElement = document.getElementById("codeField");
+                    codeElement.value = params;
+                    showResultsBox();
+                }
+
+                function hideLoading() {
+                    let loading = document.querySelector('.loading');
+                    if(loading)
+                        loading.classList.add('hidden');
+                }
+
+                function showResultsBox() {
+                    hideLoading();
+
+                    var results = document.querySelector('.results');
+                    results.classList.remove('hidden');
+                }
+
+                function invalidCode() {
+                    hideLoading();
+                    var results = document.querySelector('.error');
+                    results.classList.remove('hidden');
+                }
+
+                main();
+            })(window);
+        </script>
+    </body>
+</html>
