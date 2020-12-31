@@ -3,6 +3,13 @@
     <head>
         <title>Auth Sandbox</title>
         <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+                max-width: 768px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
             .box {
                 border: 1px solid #000;
                 border-radius: 2px;
@@ -16,9 +23,39 @@
             .code-input {
                 font-size: 2rem;
                 font-family: monospace;
+                margin-right: 1rem;
             }
             .hidden {
                 display: none !important;
+            }
+
+            .code-container {
+                display: flex;
+                flex-direction: row;
+                align-items: stretch;
+            }
+
+            .copy-notification {
+                color: #161;
+                background: #aea;
+                padding: 0.5rem;
+                border: 1px solid #161;
+                border-radius: 2px;
+
+                display: inline-block;
+                opacity: 0;
+                transition: opacity 250ms;
+
+                position: absolute;
+                left: 0;
+                top: 0;
+                margin: 1rem;
+
+                pointer-events:none;
+            }
+
+            .in {
+                opacity: 1;
             }
         </style>
     </head>
@@ -31,7 +68,7 @@
             <h1>One more thing...</h1>
             <h3>To finish signing in, copy the code below, and paste it into the app.</h3>
             <div class="box warning-box">
-                <h2>Warning!</h2>
+                <h2 style="margin-top: 0.4em;">Warning!</h2>
                 <p>This code will grant access to the account you just signed into.</p>
                 <ul>
                     <li>Only paste this into the app if you trust it</li>
@@ -42,7 +79,10 @@
                 <p>
                     If you trust the app, copy and paste this code into it. You can close this window when you are finished.
                 </p>
-                <input class="code-input" id="codeField" type="text" value="the-test-code"/>
+                <div class="code-container">
+                    <input class="code-input" id="codeField" type="text" value="the-test-code"/>
+                    <button class="code-copy-button" type="button" data-action="copy" data-target="#codeField">Copy Code</button>
+                </div>
             </div>
         </div>
 
@@ -69,9 +109,59 @@
                         return;
                     }
 
+                    registerCopyButton();
+
                     let codeElement = document.getElementById("codeField");
                     codeElement.value = params;
                     showResultsBox();
+
+                }
+
+                function registerCopyButton() {
+                    let copies = document.querySelectorAll("[data-action]");
+                    copies.forEach((ele) => {
+                        ele.addEventListener('click', copy_onClick);
+                    });
+                }
+
+                function copy_onClick(event) {
+                    let targetSelector = this.dataset["target"];
+                    if (!targetSelector) {
+                        console.warn("Copy button failed: cannot determine the target", {sender: this, event: event});
+                        return;
+                    }
+
+                    let target = document.querySelector(targetSelector);
+                    if (!target) {
+                        console.warn("Copy button failed: could not find the target in the document", {selector: targetSelector, sender: this, event: event});
+                        return;
+                    }
+
+                    console.log({sender: this, event: event});
+
+                    target.select();
+                    document.execCommand('copy');
+
+                    let copiedNotification = document.createElement("div");
+                    copiedNotification.innerText = "Copied to clipboard!";
+                    copiedNotification.classList.add("copy-notification");
+
+                    let rect = this.getBoundingClientRect();
+                    copiedNotification.style.left = rect.left + "px";
+                    copiedNotification.style.top = rect.top + "px";
+
+                    document.body.appendChild(copiedNotification);
+
+                    setTimeout(() => {
+                        copiedNotification.classList.add('in');
+                    }, 1);
+
+                    setTimeout(() => {
+                        copiedNotification.classList.remove('in');
+                        setTimeout(() => {
+                            copiedNotification.remove();
+                        }, 300);
+                    }, 3000);
                 }
 
                 function hideLoading() {
