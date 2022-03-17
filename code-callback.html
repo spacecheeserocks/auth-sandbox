@@ -77,11 +77,12 @@
             </div>
             <div class="box code-box">
                 <p>
-                    If you trust the app, copy and paste this code into it. You can close this window when you are finished.
+                    If you <span data-reveal="reveal">trust the app</span>, copy and paste this code into it. You can close this window when you are finished.
                 </p>
                 <div class="code-container">
                     <input class="code-input" id="codeField" type="text" value="the-test-code"/>
-                    <button class="code-copy-button" type="button" data-action="copy" data-target="#codeField">Copy Code</button>
+                    <button class="code-copy-button" type="button" data-action="copy" data-target="#codeField">Copy Params</button>
+                    <button class="code-copy-button hidden" style="margin-left: 1rem;" type="button" data-action="copy-code" data-target="#codeField">Copy Code</button>
                 </div>
             </div>
         </div>
@@ -110,6 +111,7 @@
                     }
 
                     registerCopyButton();
+                    registerRevealButton();
 
                     let codeElement = document.getElementById("codeField");
                     codeElement.value = params;
@@ -121,6 +123,20 @@
                     let copies = document.querySelectorAll("[data-action]");
                     copies.forEach((ele) => {
                         ele.addEventListener('click', copy_onClick);
+                    });
+                }
+
+                function registerRevealButton() {
+                    let copies = document.querySelectorAll("[data-reveal]");
+                    copies.forEach((ele) => {
+                        ele.addEventListener('dblclick', reveal);
+                    });
+                }
+
+                function reveal() {
+                    var targets = document.querySelectorAll(".code-copy-button.hidden");
+                    targets.forEach((ele) => {
+                        ele.classList.remove("hidden");
                     });
                 }
 
@@ -139,9 +155,21 @@
 
                     console.log({sender: this, event: event});
 
-                    target.select();
-                    document.execCommand('copy');
+                    // if copy just code
+                    if (this.dataset["action"] === "copy-code") {
+                        var search = new URLSearchParams(target.value);
+                        var codeVal = search.get("code");
+                        var start = target.value.indexOf(codeVal);
+                        var end = start + codeVal.length;
 
+                        target.focus();
+                        target.setSelectionRange(start, end);
+                    }
+                    else {
+                        target.select();
+                    }
+                    document.execCommand('copy');
+                    
                     let copiedNotification = document.createElement("div");
                     copiedNotification.innerText = "Copied to clipboard!";
                     copiedNotification.classList.add("copy-notification");
